@@ -1,24 +1,40 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const product = require("./models/product.model.js");
+const middleware = require("./middelware.js")
+
 
 const app = express();
 
 app.use(express.json());
+// app.use(middleware);
 
-// app.post('/api/pokemon', (req, res)=> {
-//    res.send("Working")
-
-// });
+app.get("/user",middleware, (req, res) => {
+  res.send("You are on user page");
+});
 
 app.get("/", (req, res) => {
   res.send("Hello from backend, Is Working?? yes THIS is node API");
 });
 
-app.get("/api/products", async (req, res) => {
+app.get("/api/products" , async (req, res) => {
   try {
     const products = await product.find({});
     res.status(201).json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.delete("/api/product/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedProduct = await product.deleteOne({ id: id });
+
+    if (!deletedProduct) {
+      return res.Status(404).json({ message: "Products is not found" });
+    }
+    res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -28,7 +44,7 @@ app.put("/api/product/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    const updatedProduct = await Product.findByIdAndUpdate(id, req.body);
+    const updatedProduct = await product.findByIdAndUpdate(id, req.body);
 
     if (!updatedProduct) {
       return res.status(404).json({ message: "Product not found" });
